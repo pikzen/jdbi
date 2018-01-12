@@ -15,33 +15,44 @@
 package org.jdbi.v3.core;
 
 import org.jdbi.v3.core.rule.H2DatabaseRule;
+import org.jdbi.v3.core.statement.Batch;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class TestJdbiExceptions {
+public class TestExceptionPolicy {
     @Rule
     public H2DatabaseRule dbRule = new H2DatabaseRule();
 
     private Handle h = null;
+    private Jdbi db = null;
 
     @Before
     public void setUp() {
         h = dbRule.getSharedHandle();
+        db = Jdbi.create(dbRule.getConnectionFactory());
+
+        db.useHandle(handle ->
+                handle.execute("CREATE TABLE exception_policy(name VARCHAR2(20) UNIQUE);")
+        );
     }
 
-    @Test(expected = UnableToCreateStatementException.class)
+    @Test
     public void testMalformedSQLThrowsException() {
-        h.execute("SHOULDFAIL");
+        assertThatExceptionOfType(UnableToCreateStatementException.class).isThrownBy( () ->
+                h.execute("SHOULDFAIL")
+        );
     }
 
     @Test
     public void testReplacingExceptionPolicy() {
-        Jdbi db = Jdbi.create(dbRule.getConnectionFactory());
         ExceptionPolicy customPolicy = new ExceptionPolicy() {};
         db.setExceptionPolicy(customPolicy);
 
@@ -50,7 +61,6 @@ public class TestJdbiExceptions {
 
     @Test
     public void testEnsurePolicyIsUsedForCreateStatement() {
-        Jdbi db = Jdbi.create(dbRule.getConnectionFactory());
         db.setExceptionPolicy(new ExceptionPolicy() {
             @Override
             public JdbiException unableToCreateStatement(String reason, Throwable cause, StatementContext ctx) {
@@ -58,15 +68,13 @@ public class TestJdbiExceptions {
             }
         });
 
-        try {
-            db.useHandle((handle -> handle.execute("SHOULDFAIL")));
-        } catch (UnableToCreateStatementException ex) {
-            assertThat(ex.getMessage()).isEqualTo("Custom reason");
-        }
+        assertThatExceptionOfType(UnableToCreateStatementException.class).isThrownBy(() -> db.useHandle(handle ->
+                handle.execute("SHOULDFAIL")
+        )).withMessage("Custom reason");
     }
 
+    @Test
     public void testEnsurePolicyIsUsedForExecuteStatement() {
-        Jdbi db = Jdbi.create(dbRule.getConnectionFactory());
         db.setExceptionPolicy(new ExceptionPolicy() {
             @Override
             public JdbiException unableToExecuteStatement(String reason, Throwable cause, StatementContext ctx) {
@@ -74,10 +82,12 @@ public class TestJdbiExceptions {
             }
         });
 
-        try {
-            db.useHandle((handle -> handle.execute("SHOULDFAIL")));
-        } catch (UnableToCreateStatementException ex) {
-            assertThat(ex.getMessage()).isEqualTo("Custom reason");
-        }
+        Batch b = db.open().createBatch()
+                .add("insert into exception_policy (name) VALUES ('test')")
+                .add("insert into exception_policy (name) VALUES ('test')");
+        assertThatExceptionOfType(UnableToExecuteStatementException.class)
+                .isThrownBy(b::execute)
+                .withMessage("Execute statement");
     }
+
 }
