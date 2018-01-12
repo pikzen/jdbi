@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jdbi.v3.core.ExceptionPolicy;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.extension.HandleSupplier;
 import org.jdbi.v3.core.mapper.RowMapper;
@@ -160,7 +161,7 @@ abstract class CustomizingStatementHandler<StatementType extends SqlStatement<St
             try {
                 b.apply(stmt, args);
             } catch (SQLException e) {
-                throw new UnableToExecuteStatementException(e, stmt.getContext());
+                throw stmt.getContext().getExceptionPolicy().unableToExecuteStatement(e, stmt.getContext());
             }
         });
     }

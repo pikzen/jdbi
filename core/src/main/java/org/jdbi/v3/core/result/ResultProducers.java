@@ -59,14 +59,14 @@ public class ResultProducers {
                 ResultSet rs = supplier.get().getResultSet();
 
                 if (rs == null) {
-                    throw new NoResultsException("Statement returned no results", ctx);
+                    throw ctx.getExceptionPolicy().noResults("Statement returned no results", null, ctx);
                 }
 
                 ctx.addCleanable(rs::close);
 
                 return rs;
             } catch (SQLException e) {
-                throw new ResultSetException("Could not get result set", e, ctx);
+                throw ctx.getExceptionPolicy().resultSet("Could not get result set", e, ctx);
             }
         };
     }
@@ -96,14 +96,14 @@ public class ResultProducers {
                 ResultSet rs = supplier.get().getGeneratedKeys();
 
                 if (rs == null) {
-                    throw new NoResultsException("Statement returned no generated keys", ctx);
+                    throw ctx.getExceptionPolicy().noResults("Statement returned no generated keys", null, ctx);
                 }
 
                 ctx.addCleanable(rs::close);
 
                 return rs;
             } catch (SQLException e) {
-                throw new ResultSetException("Could not get generated keys", e, ctx);
+                throw ctx.getExceptionPolicy().resultSet("Could not get generated keys", e, ctx);
             }
         };
     }

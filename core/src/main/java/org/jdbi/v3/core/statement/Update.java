@@ -57,7 +57,7 @@ public class Update extends SqlStatement<Update> {
             } catch (Exception e1) {
                 e.addSuppressed(e1);
             }
-            throw new UnableToProduceResultException("Could not produce statement result", e, getContext());
+            throw getContext().getExceptionPolicy().unableToProduceResult("Could not produce statement result", e, getContext());
         }
     }
 

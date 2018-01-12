@@ -29,7 +29,7 @@ class URLColumnMapper implements ColumnMapper<URL> {
         try {
             return new URL(r.getString(columnNumber));
         } catch (MalformedURLException e) {
-            throw new SQLException(e);
+            throw ctx.getExceptionPolicy().sql(e);
         }
     }
 }

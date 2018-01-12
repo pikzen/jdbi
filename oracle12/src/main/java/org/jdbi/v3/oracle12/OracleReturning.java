@@ -112,7 +112,7 @@ public class OracleReturning {
 
                 return rs;
             } catch (SQLException e) {
-                throw new ResultSetException("Unable to retrieve return result set", e, ctx);
+                throw ctx.getExceptionPolicy().resultSet("Unable to retrieve return result set", e, ctx);
             }
         };
     }

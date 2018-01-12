@@ -51,7 +51,7 @@ public class Query extends SqlStatement<Query> implements ResultBearing
             } catch (Exception e1) {
                 e.addSuppressed(e1);
             }
-            throw new UnableToProduceResultException(e, getContext());
+            throw getContext().getExceptionPolicy().unableToProduceResult(e, getContext());
         }
     }
 

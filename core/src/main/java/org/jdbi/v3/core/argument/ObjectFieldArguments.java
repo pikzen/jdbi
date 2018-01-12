@@ -74,7 +74,7 @@ public class ObjectFieldArguments extends ObjectPropertyNamedArgumentFinder
         }
         catch (IllegalAccessException e)
         {
-            throw new UnableToCreateStatementException(String.format("Access exception getting field for " +
+            throw ctx.getExceptionPolicy().unableToCreateStatement(String.format("Access exception getting field for " +
                     "bean property [%s] on [%s]",
                 name, object), e, ctx);
         }

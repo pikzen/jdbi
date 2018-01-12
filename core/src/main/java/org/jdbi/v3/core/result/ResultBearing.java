@@ -54,7 +54,7 @@ public interface ResultBearing {
                     return mapper.scanResultSet(resultSetSupplier, ctx);
                 }
                 catch (SQLException e) {
-                    throw new ResultSetException("Error reading result set", e, ctx);
+                    throw ctx.getExceptionPolicy().resultSet("Error reading result set", e, ctx);
                 }
             }
         };
@@ -181,7 +181,7 @@ public interface ResultBearing {
                 return result;
             }
             catch (SQLException e) {
-                throw new UnableToProduceResultException(e, ctx);
+                throw ctx.getExceptionPolicy().unableToProduceResult(e, ctx);
             }
             finally {
                 ctx.close();
@@ -208,7 +208,7 @@ public interface ResultBearing {
                 return result;
             }
             catch (SQLException e) {
-                throw new UnableToProduceResultException(e, ctx);
+                throw ctx.getExceptionPolicy().unableToProduceResult( e, ctx);
             }
             finally {
                 ctx.close();

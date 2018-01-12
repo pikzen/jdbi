@@ -188,7 +188,7 @@ public class LocalTransactionHandler implements TransactionHandler
                 stuff.getSavepoints().clear();
             }
         } catch (SQLException e) {
-            throw new UnableToRestoreAutoCommitStateException(e);
+            throw handle.getExceptionPolicy().unableToRestoreAutoCommitStateException(e);
         } finally {
             // prevent memory leak if rollback throws an exception
             localStuff.remove(handle);

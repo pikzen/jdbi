@@ -38,7 +38,7 @@ public class ColonPrefixSqlParser implements SqlParser {
         try {
             return cache.computeIfAbsent(sql, this::internalParse);
         } catch (IllegalArgumentException e) {
-            throw new UnableToCreateStatementException("Exception parsing for named parameter replacement", e, ctx);
+            throw ctx.getExceptionPolicy().unableToCreateStatement("Exception parsing for named parameter replacement", e, ctx);
         }
     }
 

@@ -57,6 +57,7 @@ public class Jdbi implements Configurable<Jdbi>
     private final ConnectionFactory connectionFactory;
     private final AtomicReference<TransactionHandler> transactionhandler = new AtomicReference<>(new LocalTransactionHandler());
     private final AtomicReference<StatementBuilderFactory> statementBuilderFactory = new AtomicReference<>(DefaultStatementBuilder.FACTORY);
+    private final AtomicReference<ExceptionPolicy> exceptionPolicy = new AtomicReference<>(new ExceptionPolicy());
 
     private final CopyOnWriteArrayList<JdbiPlugin> plugins = new CopyOnWriteArrayList<>();
 
@@ -310,7 +311,7 @@ public class Jdbi implements Configurable<Jdbi>
             }
 
             StatementBuilder cache = statementBuilderFactory.get().createStatementBuilder(conn);
-            Handle h = new Handle(config.createCopy(), transactionhandler.get(), cache, conn);
+            Handle h = new Handle(config.createCopy(), transactionhandler.get(), cache, conn, exceptionPolicy.get());
             for (JdbiPlugin p : plugins) {
                 h = p.customizeHandle(h);
             }
@@ -318,7 +319,7 @@ public class Jdbi implements Configurable<Jdbi>
             return h;
         }
         catch (SQLException e) {
-            throw new ConnectionException(e);
+            throw exceptionPolicy.get().connection(e);
         }
     }
 
@@ -503,5 +504,13 @@ public class Jdbi implements Configurable<Jdbi>
         }
 
         return OnDemandExtensions.create(this, extensionType);
+    }
+
+    public void setExceptionPolicy(ExceptionPolicy exceptionPolicy) {
+        assert(exceptionPolicy != null);
+        this.exceptionPolicy.set(exceptionPolicy);
+    }
+    public ExceptionPolicy getExceptionPolicy() {
+        return this.exceptionPolicy.get();
     }
 }

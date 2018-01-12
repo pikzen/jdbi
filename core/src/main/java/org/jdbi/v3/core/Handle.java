@@ -49,6 +49,7 @@ public class Handle implements Closeable, Configurable<Handle>
 
     private final TransactionHandler transactions;
     private final Connection connection;
+    private final ExceptionPolicy exceptionPolicy;
     private final boolean forceEndTransactions;
 
     private ThreadLocal<ConfigRegistry> config;
@@ -60,9 +61,11 @@ public class Handle implements Closeable, Configurable<Handle>
     Handle(ConfigRegistry config,
            TransactionHandler transactions,
            StatementBuilder statementBuilder,
-           Connection connection) {
+           Connection connection,
+           ExceptionPolicy policy) {
         this.transactions = transactions;
         this.connection = connection;
+        this.exceptionPolicy = policy;
 
         this.config = ThreadLocal.withInitial(() -> config);
         this.extensionMethod = new ThreadLocal<>();
@@ -131,14 +134,14 @@ public class Handle implements Closeable, Configurable<Handle>
                 try {
                     connection.close();
                     if (wasInTransaction) {
-                        throw new TransactionException("Improper transaction handling detected: A Handle with an open " +
+                        throw exceptionPolicy.transaction("Improper transaction handling detected: A Handle with an open " +
                                 "transaction was closed. Transactions must be explicitly committed or rolled back " +
                                 "before closing the Handle. " +
                                 "Jdbi has rolled back this transaction automatically.");
                     }
                 }
                 catch (SQLException e) {
-                    throw new CloseException("Unable to close Connection", e);
+                    throw exceptionPolicy.close("Unable to close Connection", e);
                 } finally {
                     LOG.trace("Handle [{}] released", this);
                     closed = true;
@@ -338,7 +341,7 @@ public class Handle implements Closeable, Configurable<Handle>
         try {
             return connection.isReadOnly();
         } catch (SQLException e) {
-            throw new UnableToManipulateTransactionIsolationLevelException("Could not getReadOnly", e);
+            throw exceptionPolicy.unableToManipulateTransactionIsolationLevel("Could not getReadOnly", e);
         }
     }
 
@@ -356,7 +359,7 @@ public class Handle implements Closeable, Configurable<Handle>
         try {
             connection.setReadOnly(readOnly);
         } catch (SQLException e) {
-            throw new UnableToManipulateTransactionIsolationLevelException("Could not setReadOnly", e);
+            throw exceptionPolicy.unableToManipulateTransactionIsolationLevel("Could not setReadOnly", e);
         }
         return this;
     }
@@ -472,7 +475,7 @@ public class Handle implements Closeable, Configurable<Handle>
             connection.setTransactionIsolation(level);
         }
         catch (SQLException e) {
-            throw new UnableToManipulateTransactionIsolationLevelException(level, e);
+            throw exceptionPolicy.unableToManipulateTransactionIsolationLevel(level, e);
         }
     }
 
@@ -486,7 +489,7 @@ public class Handle implements Closeable, Configurable<Handle>
             return TransactionIsolationLevel.valueOf(connection.getTransactionIsolation());
         }
         catch (SQLException e) {
-            throw new UnableToManipulateTransactionIsolationLevelException("unable to access current setting", e);
+            throw exceptionPolicy.unableToManipulateTransactionIsolationLevel("unable to access current setting", e);
         }
     }
 
@@ -517,5 +520,9 @@ public class Handle implements Closeable, Configurable<Handle>
 
     void setExtensionMethodThreadLocal(ThreadLocal<ExtensionMethod> extensionMethod) {
         this.extensionMethod = requireNonNull(extensionMethod);
+    }
+
+    public ExceptionPolicy getExceptionPolicy() {
+        return exceptionPolicy;
     }
 }

@@ -1324,7 +1324,7 @@ public abstract class SqlStatement<This extends SqlStatement<This>> extends Base
                 String name = "__" + key + "_" + valueIndex + "_" + propertyName;
                 names.append(':').append(name);
                 Argument argument = beanProperties.find(propertyName, ctx)
-                        .orElseThrow(() -> new UnableToCreateStatementException("Unable to get " + propertyName + " argument for " + bean, ctx));
+                        .orElseThrow(() -> ctx.getExceptionPolicy().unableToCreateStatement("Unable to get " + propertyName + " argument for " + bean, null, ctx));
                 bind(name, argument);
             }
             names.append(")");
@@ -1431,7 +1431,7 @@ public abstract class SqlStatement<This extends SqlStatement<This>> extends Base
             }
         }
         catch (SQLException e) {
-            throw new UnableToCreateStatementException(e, getContext());
+            throw getContext().getExceptionPolicy().unableToCreateStatement(null, e, getContext());
         }
 
         // The statement builder might (or might not) clean up the statement when called. E.g. the
@@ -1459,7 +1459,7 @@ public abstract class SqlStatement<This extends SqlStatement<This>> extends Base
             } catch (SQLException e1) {
                 e.addSuppressed(e1);
             }
-            throw new UnableToExecuteStatementException(e, getContext());
+            throw getContext().getExceptionPolicy().unableToExecuteStatement(e, getContext());
         }
 
         afterExecution(stmt);

@@ -120,7 +120,7 @@ public class PreparedBatch extends SqlStatement<PreparedBatch> implements Result
             } catch (Exception e1) {
                 e.addSuppressed(e1);
             }
-            throw new UnableToProduceResultException("Exception producing batch result", e, getContext());
+            throw getContext().getExceptionPolicy().unableToProduceResult("Exception producing batch result", e, getContext());
         }
     }
 
@@ -163,7 +163,7 @@ public class PreparedBatch extends SqlStatement<PreparedBatch> implements Result
                 addCleanable(() -> statementBuilder.close(connection, sql, stmt));
             }
             catch (SQLException e) {
-                throw new UnableToCreateStatementException(e, getContext());
+                throw getContext().getExceptionPolicy().unableToCreateStatement(null, e, getContext());
             }
 
 
@@ -175,7 +175,7 @@ public class PreparedBatch extends SqlStatement<PreparedBatch> implements Result
                 }
             }
             catch (SQLException e) {
-                throw new UnableToExecuteStatementException("Exception while binding parameters", e, getContext());
+                throw getContext().getExceptionPolicy().unableToExecuteStatement("Exception while binding parameters", e, getContext());
             }
 
             beforeExecution(stmt);
@@ -192,7 +192,7 @@ public class PreparedBatch extends SqlStatement<PreparedBatch> implements Result
                 return new ExecutedBatch(stmt, rs);
             }
             catch (SQLException e) {
-                throw new UnableToExecuteStatementException(Batch.mungeBatchException(e), getContext());
+                throw getContext().getExceptionPolicy().unableToExecuteStatement(Batch.mungeBatchException(e), getContext());
             }
         }
         finally {

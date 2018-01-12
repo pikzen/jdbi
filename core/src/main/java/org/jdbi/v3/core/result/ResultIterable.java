@@ -57,7 +57,7 @@ public interface ResultIterable<T> extends Iterable<T> {
                 } catch (Exception e1) {
                     e.addSuppressed(e1);
                 }
-                throw new ResultSetException("Unable to iterator result set", e, ctx);
+                throw ctx.getExceptionPolicy().resultSet("Unable to iterator result set", e, ctx);
             }
         };
     }

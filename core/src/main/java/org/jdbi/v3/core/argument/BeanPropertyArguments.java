@@ -89,9 +89,9 @@ public class BeanPropertyArguments extends MethodReturnValueNamedArgumentFinder
         Method getter = descriptor.getReadMethod();
 
         if (getter == null) {
-            throw new UnableToCreateStatementException(String.format("No getter method found for " +
+            throw ctx.getExceptionPolicy().unableToCreateStatement(String.format("No getter method found for " +
                     "bean property [%s] on [%s]",
-                name, object), ctx);
+                name, object), null, ctx);
         }
 
         return getter;

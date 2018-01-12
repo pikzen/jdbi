@@ -82,7 +82,7 @@ class ResultSetResultIterator<T> implements ResultIterator<T> {
         try {
             return mapper.map(results, context);
         } catch (SQLException e) {
-            throw new ResultSetException("Error thrown mapping result set into return type", e, context);
+            throw context.getExceptionPolicy().resultSet("Error thrown mapping result set into return type", e, context);
         } finally {
             alreadyAdvanced = safeNext();
             if (!alreadyAdvanced) {
@@ -105,7 +105,7 @@ class ResultSetResultIterator<T> implements ResultIterator<T> {
         try {
             return results.next();
         } catch (SQLException e) {
-            throw new ResultSetException("Unable to advance result set", e, context);
+            throw context.getExceptionPolicy().resultSet("Unable to advance result set", e, context);
         }
     }
 }

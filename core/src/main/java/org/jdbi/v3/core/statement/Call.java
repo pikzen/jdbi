@@ -166,7 +166,7 @@ public class Call extends SqlStatement<Call>
                         return stmt.getObject(position);
                 }
             } catch (SQLException e) {
-                throw new UnableToExecuteStatementException("Could not get OUT parameter from statement", e, getContext());
+                throw getContext().getExceptionPolicy().unableToExecuteStatement("Could not get OUT parameter from statement", e, getContext());
             }
         }
     }

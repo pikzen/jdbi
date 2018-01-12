@@ -70,7 +70,7 @@ public class Batch extends BaseStatement<Batch>
             }
             catch (SQLException e)
             {
-                throw new UnableToCreateStatementException(e, getContext());
+                throw getContext().getExceptionPolicy().unableToCreateStatement(null, e, getContext());
             }
 
             LOG.trace("Execute batch [");
@@ -86,7 +86,7 @@ public class Batch extends BaseStatement<Batch>
             }
             catch (SQLException e)
             {
-                throw new UnableToExecuteStatementException("Unable to configure JDBC statement", e, getContext());
+                throw getContext().getExceptionPolicy().unableToExecuteStatement("Unable to configure JDBC statement", e, getContext());
             }
 
             try
@@ -102,7 +102,7 @@ public class Batch extends BaseStatement<Batch>
             }
             catch (SQLException e)
             {
-                throw new UnableToExecuteStatementException(mungeBatchException(e), getContext());
+                throw getContext().getExceptionPolicy().unableToExecuteStatement(mungeBatchException(e), getContext());
             }
         }
         finally {

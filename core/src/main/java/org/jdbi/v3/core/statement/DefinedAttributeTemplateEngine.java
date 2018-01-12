@@ -51,7 +51,7 @@ public class DefinedAttributeTemplateEngine implements TemplateEngine {
                         String key = text.substring(1, text.length() - 1);
                         Object value = ctx.getAttribute(key);
                         if (value == null) {
-                            throw new UnableToCreateStatementException("Undefined attribute for token '" + text + "'", ctx);
+                            throw ctx.getExceptionPolicy().unableToCreateStatement("Undefined attribute for token '" + text + "'", null, ctx);
                         }
                         b.append(value);
                         break;
@@ -66,7 +66,7 @@ public class DefinedAttributeTemplateEngine implements TemplateEngine {
             return b.toString();
         }
         catch (RuntimeException e) {
-            throw new UnableToCreateStatementException("Error rendering SQL template: '" + template + "'", e, ctx);
+            throw ctx.getExceptionPolicy().unableToCreateStatement("Error rendering SQL template: '" + template + "'", e, ctx);
         }
     }
 }

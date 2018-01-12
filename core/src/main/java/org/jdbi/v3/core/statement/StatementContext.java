@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 
 import org.jdbi.v3.core.CloseException;
+import org.jdbi.v3.core.ExceptionPolicy;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.argument.Argument;
 import org.jdbi.v3.core.argument.Arguments;
@@ -63,6 +64,7 @@ public class StatementContext implements Closeable
 {
     private final ConfigRegistry config;
     private final ExtensionMethod extensionMethod;
+    private final ExceptionPolicy exceptionPolicy;
 
     private final Set<Cleanable> cleanables = new LinkedHashSet<>();
 
@@ -83,13 +85,14 @@ public class StatementContext implements Closeable
 
     StatementContext(ConfigRegistry config)
     {
-        this(config, null);
+        this(config, null, null);
     }
 
-    StatementContext(ConfigRegistry config, ExtensionMethod extensionMethod)
+    StatementContext(ConfigRegistry config, ExtensionMethod extensionMethod, ExceptionPolicy exceptionPolicy)
     {
         this.config = requireNonNull(config);
         this.extensionMethod = extensionMethod;
+        this.exceptionPolicy = exceptionPolicy;
     }
 
     /**
@@ -488,7 +491,7 @@ public class StatementContext implements Closeable
             }
         } finally {
             if (exception != null) {
-                throw new CloseException("Exception thrown while cleaning StatementContext", exception);
+                throw exceptionPolicy.close("Exception thrown while cleaning StatementContext", exception);
             }
         }
     }
@@ -497,4 +500,9 @@ public class StatementContext implements Closeable
     {
         return extensionMethod;
     }
+
+    public ExceptionPolicy getExceptionPolicy() {
+        return exceptionPolicy== null ? new ExceptionPolicy() : exceptionPolicy;
+    }
+
 }

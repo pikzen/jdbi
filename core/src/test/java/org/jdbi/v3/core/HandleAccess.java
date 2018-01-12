@@ -32,6 +32,6 @@ public class HandleAccess {
         Connection fakeConnection = Mockito.mock(Connection.class);
 
         return new Handle(new ConfigRegistry(), new LocalTransactionHandler(),
-                new DefaultStatementBuilder(), fakeConnection);
+                new DefaultStatementBuilder(), fakeConnection, new ExceptionPolicy());
     }
 }

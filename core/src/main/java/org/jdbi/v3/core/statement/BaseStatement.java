@@ -37,7 +37,10 @@ abstract class BaseStatement<This> implements Closeable, Configurable<This>
     {
         this.handle = handle;
         this.ctx = new StatementContext(
-                handle.getConfig().createCopy(), handle.getExtensionMethod());
+                handle.getConfig().createCopy(),
+                handle.getExtensionMethod(),
+                handle.getExceptionPolicy()
+        );
     }
 
     {
@@ -105,7 +108,7 @@ abstract class BaseStatement<This> implements Closeable, Configurable<This>
                 customizer.beforeExecution(stmt, ctx);
             }
             catch (SQLException e) {
-                throw new UnableToExecuteStatementException("Exception thrown in statement customization", e, ctx);
+                throw ctx.getExceptionPolicy().unableToExecuteStatement("Exception thrown in statement customization", e, ctx);
             }
         }
     }
@@ -117,7 +120,7 @@ abstract class BaseStatement<This> implements Closeable, Configurable<This>
                 customizer.afterExecution(stmt, ctx);
             }
             catch (SQLException e) {
-                throw new UnableToExecuteStatementException("Exception thrown in statement customization", e, ctx);
+                throw ctx.getExceptionPolicy().unableToExecuteStatement("Exception thrown in statement customization", e, ctx);
             }
         }
     }

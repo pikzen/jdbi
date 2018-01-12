@@ -37,7 +37,7 @@ class ArgumentBinder {
                 }
                 // any missing positional parameters could be return parameters
             } catch (SQLException e) {
-                throw new UnableToExecuteStatementException(
+                throw context.getExceptionPolicy().unableToExecuteStatement(
                         "Exception while binding positional param at (0 based) position " + i, e, context);
             }
         }
@@ -45,8 +45,9 @@ class ArgumentBinder {
 
     private static void bindNamed(List<String> parameterNames, Binding binding, PreparedStatement statement, StatementContext context) {
         if (parameterNames.isEmpty() && !binding.isEmpty()) {
-            throw new UnableToExecuteStatementException(
+            throw context.getExceptionPolicy().unableToExecuteStatement(
                     String.format("Unable to execute. The query doesn't have named parameters, but provided binding '%s'.", binding),
+                    null,
                     context);
         }
         for (int i = 0; i < parameterNames.size(); i++) {
@@ -54,12 +55,13 @@ class ArgumentBinder {
 
             try {
                 binding.findForName(param, context)
-                        .orElseThrow(() -> new UnableToExecuteStatementException(
+                        .orElseThrow(() -> context.getExceptionPolicy().unableToExecuteStatement(
                                 String.format("Unable to execute, no named parameter matches '%s'.", param),
+                                null,
                                 context))
                         .apply(i + 1, statement, context);
             } catch (SQLException e) {
-                throw new UnableToCreateStatementException(
+                throw context.getExceptionPolicy().unableToCreateStatement(
                         String.format("Exception while binding named parameter '%s'", param), e, context);
             }
         }

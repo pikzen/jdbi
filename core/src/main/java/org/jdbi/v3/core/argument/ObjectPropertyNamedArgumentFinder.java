@@ -63,11 +63,11 @@ abstract class ObjectPropertyNamedArgumentFinder implements NamedArgumentFinder
 
             return getValue(actualName, ctx)
                 .map(tv -> ctx.findArgumentFor(tv.type, tv.value)
-                    .orElseThrow(() -> new UnableToCreateStatementException(
+                    .orElseThrow(() -> ctx.getExceptionPolicy().unableToCreateStatement(
                         String.format("No argument factory registered for type [%s] for element [%s] on [%s]",
                             tv.type,
                             name,
-                            object),
+                            object), null,
                         ctx)));
         }
 
